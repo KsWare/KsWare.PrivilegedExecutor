@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client.cs" />
     <Compile Include="ExitCode.cs" />
     <Compile Include="Internal\Helper.cs" />
     <Compile Include="Program.cs" />
