@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>$id$</id>
+        <version>$version$</version>
+        <title>$title$</title>
+        <authors>$author$</authors>
+        <owners>$author$</owners>
+        <licenseUrl>https://github.com/KsWare/$id$/licence</licenseUrl>
+        <projectUrl>https://github.com/KsWare/$id$</projectUrl>
+        <iconUrl>https://github.com/KsWare/$id$/icon.ico</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>$description$</description>
+		<developmentDependency>false</developmentDependency>
+        <releaseNotes></releaseNotes>
+        <copyright>Copyright 2018 by KsWare. All rights reserved.</copyright>
+        <tags>KsWare execute elevated access-rights</tags>
+    </metadata>
+</package>
