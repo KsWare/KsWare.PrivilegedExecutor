@@ -34,14 +34,8 @@
     <Reference Include="KsWare.Console, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\KsWare.Console.1.0.0-CI00001\lib\net45\KsWare.Console.exe</HintPath>
     </Reference>
-    <Reference Include="KsWare.IO.FileSystem, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\KsWare.IO.FileSystem.1.0.0-CI00001\lib\net45\KsWare.IO.FileSystem.dll</HintPath>
-    </Reference>
     <Reference Include="KsWare.IO.NamedPipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\KsWare.IO.NamedPipes.1.0.0-CI00003\lib\net45\KsWare.IO.NamedPipes.dll</HintPath>
-    </Reference>
-    <Reference Include="Pri.LongPath, Version=2.0.45.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Pri.LongPath.2.0.45\lib\net45\Pri.LongPath.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
