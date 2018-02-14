@@ -10,6 +10,8 @@
     <AssemblyName>KsWare.PrivilegedExecutor</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,11 +33,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="KsWare.Console, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\KsWare.Console.1.0.0-CI00001\lib\net45\KsWare.Console.exe</HintPath>
+    <Reference Include="KsWare.Console, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\KsWare.Console.0.1.0-CI00002\lib\net45\KsWare.Console.exe</HintPath>
     </Reference>
-    <Reference Include="KsWare.IO.NamedPipes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\KsWare.IO.NamedPipes.1.0.0-CI00003\lib\net45\KsWare.IO.NamedPipes.dll</HintPath>
+    <Reference Include="KsWare.IO.NamedPipes, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\KsWare.IO.NamedPipes.0.1.0-CI00001\lib\net45\KsWare.IO.NamedPipes.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,4 +65,11 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets" Condition="Exists('packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\KsWare.NuGet.PackageBuilder.0.1.0-CI00007\build\KsWare.NuGet.PackageBuilder.targets'))" />
+  </Target>
 </Project>
