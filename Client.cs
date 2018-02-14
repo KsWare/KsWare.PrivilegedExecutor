@@ -6,17 +6,27 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using KsWare.IO.FileSystem;
 using KsWare.IO.NamedPipes;
+using KsWare.PrivilegedExecutor.Internal;
 
 namespace KsWare.PrivilegedExecutor {
+
+	internal static class TestClass {
+		// KsWare.PrivilegedExecutor.TestClass.TestConsole
+
+		public static int TestMethod() { return 0; }
+
+		public static int TestMethod(string p0) { return 1; }
+
+		public static int TestMethod(string p0, string p1) { return 2; }
+	}
 
 	public static class Client {
 
 		private static Process _process;
 
 		public static int ExecuteProcess(string method, params string[] args) {
-			var f = Path.ChangeFileName(Assembly.GetExecutingAssembly().Location, "KsWare.IO.FileSystem.PrivilegedExecutor.exe");
+			var f = Helper.ChangeFileName(Assembly.GetExecutingAssembly().Location, "KsWare.PrivilegedExecutor.exe");
 			var a = JoinArguments(method) + " " + JoinArguments(args);
 			Debug.WriteLine(f             + " " + a);
 			var p             = new Process {
@@ -40,7 +50,7 @@ namespace KsWare.PrivilegedExecutor {
 				_process = Process.GetProcessesByName("KsWare.PrivilegedExecutor").FirstOrDefault();
 			}
 			if (_process == null) {
-				var f = Path.ChangeFileName(Assembly.GetExecutingAssembly().Location, "KsWare.PrivilegedExecutor.exe");
+				var f = Helper.ChangeFileName(Assembly.GetExecutingAssembly().Location, "KsWare.PrivilegedExecutor.exe");
 				_process = new Process {
 					StartInfo = new ProcessStartInfo {
 						FileName = f,
@@ -64,14 +74,6 @@ namespace KsWare.PrivilegedExecutor {
 				return int.Parse(response);
 			}
 		}
-
-		// KsWare.IO.FileSystem.PrivilegedExecutor.TestConsole
-
-		public static int TestConsole() { return 0; }
-
-		public static int TestConsole(string p0) { return 1; }
-
-		public static int TestConsole(string p0, string p1) { return 2; }
 
 		private static string JoinArguments(params string[] args) {
 			// https://stackoverflow.com/a/6040946/2369575

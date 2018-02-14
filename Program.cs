@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -36,26 +37,22 @@ namespace KsWare.PrivilegedExecutor {
 
 			if (!Helper.IsElevated) Environment.Exit((int) ExitCode.NotElevated);
 
-			while (true) {
-				switch ((args.Length > 0 ? args[0] : "").ToLowerInvariant()) {
-					case "": goto ParseArgumentsDone;
-					case "-s":
-					case "-service":
-						ServiceMode = true;
-						break;
-					case "-d":
-					case "-debug":
-						DebugMode = true;
-						break;
+			while (args.Length > 0 && args[0].StartsWith("-")) {
+				switch (args[0].ToLowerInvariant()) {
+					case "-s": case "-service": ServiceMode = true; break;
+					case "-d": case "-debug": DebugMode = true; break;
+					default:
+						//Debug.WriteLine($"Warning: Unknown parameter ignored. '{args[0]}'"); break;
+						Environment.Exit((int) ExitCode.InvalidParameter); break;
 				}
 				args = Helper.Shift(args);
 			}
-			ParseArgumentsDone:
-
 			if (ServiceMode) {
 				RunAsService();
 				return;
 			}
+
+			if (args.Length == 0) Environment.Exit((int) ExitCode.InvalidParameter);
 
 			switch (args[0]) {
 //				case "KsWare.IO.FileSystem.VolumeMountPoint.SetVolumeMountPointConsole": Environment.ExitCode=KsWare.IO.FileSystem.VolumeMountPoint.SetVolumeMountPointConsole(args[1],args[2]); break;
@@ -71,7 +68,7 @@ namespace KsWare.PrivilegedExecutor {
 
 		private static void RunAsService() {
 			Console.ShowWindow(DebugMode);
-//			Mutex = new Mutex(true, @"Global\KsWare.IO.FileSystem.PrivilegedExecutor");
+//			Mutex = new Mutex(true, @"Global\KsWare.PrivilegedExecutor");
 //			var thread=new Thread(MessageLoop){IsBackground = true,Name = "ServiceWorker"};
 //			thread.Start();
 //			thread.Join();
@@ -79,6 +76,7 @@ namespace KsWare.PrivilegedExecutor {
 		}
 
 		private static void MessageLoop() {
+			// TODO use NamedPipeServer
 			EventHandler<ConsoleExitEventArgs> consoleExitHandler = null;
 			NamedPipeServerStreams                    pipeServer         = null;
 			var                                exit               = false;
@@ -86,7 +84,7 @@ namespace KsWare.PrivilegedExecutor {
 			Timer timer=null;
 
 			try {
-				pipeServer = new NamedPipeServerStreams("KsWare.IO.FileSystem.PrivilegedExecutor");
+				pipeServer = new NamedPipeServerStreams("KsWare.PrivilegedExecutor");
 				StreamReader sr = pipeServer.Reader;
 				StreamWriter sw = pipeServer.Writer;
 
