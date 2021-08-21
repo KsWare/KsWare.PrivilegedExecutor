@@ -1,4 +1,4 @@
-﻿# KsWare.PrivilegedExecutor #
+﻿# KsWare.PrivilegedExecutor
 
 Executes privileged code from unprivileged process.
 
