@@ -29,7 +29,7 @@ namespace KsWare.PrivilegedExecutor.Internal {
 			return args.Skip(1).ToArray();
 		}
 
-		internal static int ExecuteGeneric(string[] args) {
+		public static int ExecuteGeneric(string[] args) {
 			const BindingFlags flags      = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 			var                t          = args[0].Split(';');
 			var assemblyName = t.Length == 2 ? t[0] : null;

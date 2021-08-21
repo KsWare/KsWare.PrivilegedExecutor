@@ -12,14 +12,14 @@ using static KsWare.PrivilegedExecutor.Internal.Helper;
 
 namespace KsWare.PrivilegedExecutor {
 
-	class Program {
+	public static class Program {
 
 		private static bool ServiceMode;
 		private static bool DebugMode;
 
 		private static Mutex Mutex { get; set; }
 
-		static void Main(string[] args) {
+		public static int Main(params string[] args) {
 			if (args.Length == 0) {
 				Console.WriteLine("Privileged Executor for KsWare.IO.FileSystem v1.0");
 				Console.WriteLine("Copyright (c) 2018 by KsWare. All rights reserved.");
@@ -27,7 +27,7 @@ namespace KsWare.PrivilegedExecutor {
 				Console.WriteLine("This programm is not indended to be used by a user.");
 				Console.Write("Press any key for exit...");
 				Console.ReadKey(true);
-				return;
+				return 0;
 			}
 
 			Console.WriteLine($"IsElevated: {Helper.IsElevated}");
@@ -49,7 +49,7 @@ namespace KsWare.PrivilegedExecutor {
 			}
 			if (ServiceMode) {
 				RunAsService();
-				return;
+				return 0;
 			}
 
 			if (args.Length == 0) Environment.Exit((int) ExitCode.InvalidParameter);
@@ -63,6 +63,7 @@ namespace KsWare.PrivilegedExecutor {
 			if (Enum.IsDefined(typeof(ExitCode), Environment.ExitCode))
 				Console.WriteLine($"ExitReason: {(ExitCode) Environment.ExitCode}");
 			Console.WriteLine($"ExitCode: {Environment.ExitCode}");
+			return Environment.ExitCode;
 //			Thread.Sleep(5000);
 		}
 

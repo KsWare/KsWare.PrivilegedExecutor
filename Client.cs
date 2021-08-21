@@ -21,9 +21,45 @@ namespace KsWare.PrivilegedExecutor {
 		public static int TestMethod(string p0, string p1) { return 2; }
 	}
 
+	public enum CallMode {
+		Process=1,
+		Service=2,
+	}
+
 	public static class Client {
 
+		public static CallMode Mode { get; set; } = CallMode.Process;
+
+		public static TimeSpan ServiceIdleTime { get; set; } = TimeSpan.FromMinutes(5);
+
 		private static Process _process;
+
+		/// <summary>
+		/// Executes the specified methode.
+		/// </summary>
+		/// <param name="type">The type containing the method.</param>
+		/// <param name="methodName">Name of the method.</param>
+		/// <param name="args">The arguments.</param>
+		/// <returns>System.Int32.</returns>
+		public static int Execute(Type type, string methodName, params string[] args) {
+			var method = type.Assembly.GetName(false).Name + ";" + type.FullName + "." + methodName;
+			return Execute(method, args);
+		}
+
+		/// <summary>Executes the specified method.</summary>
+		/// <param name="method">The full qualified method name.</param>
+		/// <param name="args">The arguments.</param>
+		/// <returns>System.Int32.</returns>
+		/// <exception cref="InvalidOperationException">Invalid Mode.</exception>
+		/// <remarks>Full qualified method name: <c>AssemblyName</c> <c>;</c> <c>TypeFullName</c> <c>.</c> <c>MethodName</c>.<br/>
+		/// Example: <c>System.IO;System.IO.File.Delete</c></remarks>
+		public static int Execute(string method, params string[] args) {
+			switch (Mode) {
+				case CallMode.Process: return ExecuteProcess(method, args);
+				case CallMode.Service: return ExecuteService(method, args);
+				default:               throw new InvalidOperationException("Invalid Mode.");
+			}
+		}
 
 		public static int ExecuteProcess(string method, params string[] args) {
 			var f = Helper.ChangeFileName(Assembly.GetExecutingAssembly().Location, "KsWare.PrivilegedExecutor.exe");
