@@ -5,37 +5,27 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using KsWare.IO.NamedPipes;
 using KsWare.PrivilegedExecutor.Internal;
 
 namespace KsWare.PrivilegedExecutor {
 
-	internal static class TestClass {
-		// KsWare.PrivilegedExecutor.TestClass.TestConsole
-
-		public static int TestMethod() { return 0; }
-
-		public static int TestMethod(string p0) { return 1; }
-
-		public static int TestMethod(string p0, string p1) { return 2; }
-	}
-
-	public enum CallMode {
-		Process=1,
-		Service=2,
-	}
-
 	public static class Client {
+
+		private static Process _process;
 
 		public static CallMode Mode { get; set; } = CallMode.Process;
 
 		public static TimeSpan ServiceIdleTime { get; set; } = TimeSpan.FromMinutes(5);
 
-		private static Process _process;
+		public static bool DebugMode { get; set; }
+
+		public static bool SingleInstance { get; set; } = true; // TODO in current version true is the default value, as long multi instances are not implemented
 
 		/// <summary>
-		/// Executes the specified methode.
+		/// Executes the specified method.
 		/// </summary>
 		/// <param name="type">The type containing the method.</param>
 		/// <param name="methodName">Name of the method.</param>
@@ -55,8 +45,9 @@ namespace KsWare.PrivilegedExecutor {
 		/// Example: <c>System.IO;System.IO.File.Delete</c></remarks>
 		public static int Execute(string method, params string[] args) {
 			switch (Mode) {
-				case CallMode.Process: return ExecuteProcess(method, args);
-				case CallMode.Service: return ExecuteService(method, args);
+				case CallMode.Process          : return ExecuteProcess(method, args);
+				case CallMode.BackgroundProcess: return ExecuteBackgroundProcess(method, args);
+				case CallMode.Service          : return ExecuteService(method, args);
 				default:               throw new InvalidOperationException("Invalid Mode.");
 			}
 		}
@@ -72,7 +63,7 @@ namespace KsWare.PrivilegedExecutor {
 					UseShellExecute = true,
 					Verb            = "runas",
 					LoadUserProfile = false,
-					WindowStyle     = ProcessWindowStyle.Hidden
+					WindowStyle = DebugMode ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden
 				}
 			};
 			p.Start();
@@ -80,34 +71,57 @@ namespace KsWare.PrivilegedExecutor {
 			return p.ExitCode;
 		}
 
-		public static int ExecuteService(string method, params string[] args) {
+		public static int ExecuteBackgroundProcess(string method, params string[] args) {
 			const string RS = "\u001E";
-			if (_process == null) {
+			if (_process == null || _process.HasExited) {
 				_process = Process.GetProcessesByName("KsWare.PrivilegedExecutor").FirstOrDefault();
 			}
-			if (_process == null) {
+			if (_process == null || _process.HasExited) {
 				var f = Helper.ChangeFileName(Assembly.GetExecutingAssembly().Location, "KsWare.PrivilegedExecutor.exe");
 				_process = new Process {
 					StartInfo = new ProcessStartInfo {
 						FileName = f,
-						Arguments = "-service -debug",
+						Arguments = "--background"+(SingleInstance?" --singleInstance":"") +(DebugMode?" --debug":""),
 						UseShellExecute = true,
 						Verb = "runas",
 						LoadUserProfile = false,
-						WindowStyle = ProcessWindowStyle.Hidden
+						WindowStyle = DebugMode ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden
 					}
 				};
 				_process.Start();
 			}
 			var a = method + (args.Length > 0 ? RS + string.Join(RS, args) : "");
-			return SendCommand(a);
+			return SendCommandToBackgroundProcess(a);
 		}
 
-		private static int SendCommand(string command) {
-			using (var pipeClient = new NamedPipeClient("KsWare.PrivilegedExecutor")) {
-				pipeClient.Connect(500); // TODO catch exception
+		public static int ExecuteService(string method, params string[] args) {
+			return ExecuteBackgroundProcess(method, args);
+			//TODO implement ExecuteService
+		}
+
+		public static void CloseService() {
+			if(_process==null || _process.HasExited) return;
+			_process.CloseMainWindow();
+			if(_process.WaitForExit(500)) return;
+			_process.Kill();
+		}
+
+		// --- private ---
+
+		private static int SendCommandToBackgroundProcess(string command) {
+			NamedPipeClient pipeClient = null;
+			try {
+				pipeClient = new NamedPipeClient("KsWare.PrivilegedExecutor" + (SingleInstance ? "" : _process.Id.ToString()));
+				pipeClient.Connect(500);
 				var response = pipeClient.SendRequest(command);
 				return int.Parse(response);
+			}
+			catch (TimeoutException ex) {
+				if (_process.HasExited) throw new TimeoutException($"Server process has been terminated with exit code '{(ExitCode)_process.ExitCode}'", ex);
+				else throw;
+			}
+			finally {
+				pipeClient?.Dispose();
 			}
 		}
 
@@ -121,6 +135,7 @@ namespace KsWare.PrivilegedExecutor {
 			}
 			return string.Join(" ", result);
 		}
+
 	}
 
 }

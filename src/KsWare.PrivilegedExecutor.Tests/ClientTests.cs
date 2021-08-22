@@ -6,11 +6,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KsWare.PrivilegedExecutor.Internal;
 
 namespace KsWare.PrivilegedExecutor.Tests {
 
 	[TestClass]
 	public class ClientTests {
+
+		[TestCleanup]
+		public void Cleanup() {
+			PrivilegedExecutor.Client.CloseService();
+		}
 
 		private void A() {
 			var t = typeof(KsWare.PrivilegedExecutor.TestClass);
@@ -37,10 +43,9 @@ namespace KsWare.PrivilegedExecutor.Tests {
 		[TestMethod()]
 		public void ExecuteServiceTest() {
 			var method = "KsWare.PrivilegedExecutor;KsWare.PrivilegedExecutor.TestClass.TestMethod";
-
-			Assert.AreEqual(0, PrivilegedExecutor.Client.ExecuteService(method));
-			Assert.AreEqual(1, PrivilegedExecutor.Client.ExecuteService(method, "1"));
-			Assert.AreEqual(2, PrivilegedExecutor.Client.ExecuteService(method, "1", "2"));
+			Assert.AreEqual(0, PrivilegedExecutor.Client.ExecuteBackgroundProcess(method));
+			Assert.AreEqual(1, PrivilegedExecutor.Client.ExecuteBackgroundProcess(method, "1"));
+			Assert.AreEqual(2, PrivilegedExecutor.Client.ExecuteBackgroundProcess(method, "1", "2"));
 		}
 	}
 }

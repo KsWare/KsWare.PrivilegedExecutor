@@ -15,60 +15,72 @@ namespace KsWare.PrivilegedExecutor {
 
 	public static class Program {
 
-		private static bool ServiceMode;
+		private static bool BackgroundMode;
 		private static bool DebugMode;
+		private static bool SingleInstance = false;
 
 		private static Mutex Mutex { get; set; }
 
 		public static int Main(params string[] args) {
-			if (args.Length == 0) {
-				Console.WriteLine("Privileged Executor for KsWare.IO.FileSystem v1.0");
-				Console.WriteLine("Copyright (c) 2018 by KsWare. All rights reserved.");
-				Console.WriteLine();
-				Console.WriteLine("This programm is not indended to be used by a user.");
-				Console.Write("Press any key for exit...");
-				Console.ReadKey(true);
-				return 0;
-			}
-
-			Console.WriteLine($"IsElevated: {Helper.IsElevated}");
-			Console.WriteLine($"UserName: {Environment.UserName}");
-			Console.WriteLine($"UserInteractive: {Environment.UserInteractive}");
-			Console.WriteLine(args[0]);
-
-			if (!Helper.IsElevated) Environment.Exit((int) ExitCode.NotElevated);
-
-			while (args.Length > 0 && args[0].StartsWith("-")) {
-				switch (args[0].ToLowerInvariant()) {
-					case "-s": case "-service": ServiceMode = true; break;
-					case "-d": case "-debug": DebugMode = true; break;
-					default:
-						//Debug.WriteLine($"Warning: Unknown parameter ignored. '{args[0]}'"); break;
-						Environment.Exit((int) ExitCode.InvalidParameter); break;
+			try {
+				if (args.Length == 0) {
+					Console.WriteLine("Privileged Executor");
+					Console.WriteLine("Copyright (c) 2018-2021 by KsWare. All rights reserved.");
+					Console.WriteLine();
+					Console.WriteLine($"IsElevated: {Helper.IsElevated}");
+					Console.WriteLine($"UserName: {Environment.UserName}");
+					Console.WriteLine($"UserInteractive: {Environment.UserInteractive}");
+					Console.WriteLine();
+					Console.WriteLine("This program is not intended to be executed by a regular user.");
+					Console.Write("Press any key for exit...");
+					Console.ReadKey(true);
+					return (int)ExitCode.Success;
 				}
-				args = Helper.Shift(args);
-			}
-			if (ServiceMode) {
-				RunAsService();
-				return 0;
-			}
+				Console.WriteLine($"StartParameter: {string.Join(" ",args)}");
+				Console.WriteLine($"IsElevated: {Helper.IsElevated}");
+				Console.WriteLine($"UserName: {Environment.UserName}");
+				Console.WriteLine($"UserInteractive: {Environment.UserInteractive}");
 
-			if (args.Length == 0) Environment.Exit((int) ExitCode.InvalidParameter);
+				while (args.Length > 0 && args[0].StartsWith("-")) {
+					switch (args[0].ToLowerInvariant()) {
+						case "-b": case "--background": BackgroundMode = true; break;
+						case "-d": case "--debug": DebugMode = true; break;
+						case "-s": case "--singleinstance": SingleInstance = true; break;
+						default:
+							Console.WriteLine($"ERR: Unknown start parameter '{args[0]}'");
+							return (int)ExitCode.InvalidParameter;
+					}
+					args = Helper.Shift(args);
+				}
 
-			switch (args[0]) {
-//				case "KsWare.IO.FileSystem.VolumeMountPoint.SetVolumeMountPointConsole": Environment.ExitCode=KsWare.IO.FileSystem.VolumeMountPoint.SetVolumeMountPointConsole(args[1],args[2]); break;
-				default:
-					Environment.ExitCode = ExecuteGeneric(args);
-					break;
+				if (!Helper.IsElevated) return (int)ExitCode.NotElevated;
+
+				if (BackgroundMode) {
+					RunInBackground();
+					if (DebugMode) {
+						Console.Write("[SERVER DEBUG MODE] Press any key to exit...");
+						Console.ReadKey(true); //keep open at exit
+					}
+					return (int)ExitCode.Success;
+				}
+
+				if (args.Length == 0) Environment.Exit((int)ExitCode.InvalidParameter);
+
+				switch (args[0]) {
+//					case "KsWare.IO.FileSystem.VolumeMountPoint.SetVolumeMountPointConsole": Environment.ExitCode=KsWare.IO.FileSystem.VolumeMountPoint.SetVolumeMountPointConsole(args[1],args[2]); break;
+					default:
+						return ExecuteGeneric(args);
+				}
 			}
-			if (Enum.IsDefined(typeof(ExitCode), Environment.ExitCode))
-				Console.WriteLine($"ExitReason: {(ExitCode) Environment.ExitCode}");
-			Console.WriteLine($"ExitCode: {Environment.ExitCode}");
-			return Environment.ExitCode;
+			finally {
+				if(DebugMode) Console.WriteLine(Enum.IsDefined(typeof(ExitCode), Environment.ExitCode)
+					? $"ExitReason: {(ExitCode)Environment.ExitCode}"
+					: $"ExitCode: {Environment.ExitCode}");
+			}
 //			Thread.Sleep(5000);
 		}
 
-		private static void RunAsService() {
+		private static void RunInBackground() {
 			Console.ShowWindow(DebugMode);
 //			Mutex = new Mutex(true, @"Global\KsWare.PrivilegedExecutor");
 //			var thread=new Thread(MessageLoop){IsBackground = true,Name = "ServiceWorker"};
@@ -80,52 +92,57 @@ namespace KsWare.PrivilegedExecutor {
 		private static void MessageLoop() {
 			// TODO use NamedPipeServer
 			EventHandler<ConsoleExitEventArgs> consoleExitHandler = null;
-			NamedPipeServerStreams                    pipeServer         = null;
-			var                                exit               = false;
+			NamedPipeServerStreams pipeServer = null;
+			var exit = false;
 			var lastTransmission = DateTime.MinValue;
-			Timer timer=null;
+			Timer timer = null;
 
 			try {
-				pipeServer = new NamedPipeServerStreams("KsWare.PrivilegedExecutor");
-				StreamReader sr = pipeServer.Reader;
-				StreamWriter sw = pipeServer.Writer;
+				var pipeName = "KsWare.PrivilegedExecutor" + (SingleInstance ? "" : Process.GetCurrentProcess().Id.ToString());
+				pipeServer = new NamedPipeServerStreams(pipeName);
+				Console.WriteLine($"Named pipe created '{pipeName}*'");
+				var reader = pipeServer.Reader;
+				var writer = pipeServer.Writer;
 
 				consoleExitHandler = (sender, e) => {
 					Console.WriteLine($"[SERVER] Close because {e.ExitReason}. Shutting down...");
-					exit              = true;
+					exit = true;
 					pipeServer?.Close();
 				};
 				Console.Exit += consoleExitHandler;
 
 				lastTransmission = DateTime.Now;
-				timer=new Timer(state => {
-					Console.WriteLine("[SERVER] Close because idle since 5 minutes. Shutting down...");
+				timer = new Timer(state => {
+					Console.WriteLine("Close because idle since 5 minutes. Shutting down...");
 					exit = true;
 					pipeServer?.Close();
-				},null,TimeSpan.FromMinutes(5),TimeSpan.FromMilliseconds(-1));
+				}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMilliseconds(-1));
 
 				while (!exit) {
 					try {
+						Console.WriteLine("WaitForConnection...");
 						pipeServer.WaitForConnection();
-						string command = sr.ReadLine();
-						if(command==null) continue;
-						Console.WriteLine($"[SERVER] Received: {command}");
-						lastTransmission=DateTime.Now;
+						var command = reader.ReadLine();
+						if (command == null) continue;
+						Console.WriteLine($"Command received: {command}");
+						lastTransmission = DateTime.Now;
 						timer.Change(TimeSpan.FromMinutes(5), TimeSpan.FromMilliseconds(-1));
 						if (command == "-close") {
-							Console.WriteLine("[SERVER] Close requested by client. Shutting down...");
+							Console.WriteLine("Server close requested by client. Shutting down...");
 							break;
 						}
-						var args     = SplitCommandLine(command);
-						var exitcode = ExecuteGeneric(args);
-						sw.WriteLine(exitcode);
-						sw.Flush();
+
+						var args = SplitCommandLine(command);
+						var exitCode = ExecuteGeneric(args);
+						writer.WriteLine(exitCode);
+						writer.Flush();
 					}
-					catch (IOException ex) { // Catch the IOException that is raised if the pipe is broken or disconnected.
-						Console.WriteLine($"[SERVER] Error: {ex.Message}");
+					catch (IOException ex) {
+						// Catch the IOException that is raised if the pipe is broken or disconnected.
+						Console.WriteLine($"ERROR: {ex.Message}");
 					}
 					catch (Exception ex) {
-						Console.WriteLine(@"[SERVER] ERROR {ex.Message}");
+						Console.WriteLine($"ERROR: {ex.Message}");
 					}
 					finally {
 						pipeServer.WaitForPipeDrain();
@@ -136,7 +153,7 @@ namespace KsWare.PrivilegedExecutor {
 				}
 			}
 			catch (Exception ex) {
-
+				Console.WriteLine($@"ERROR: {ex.Message}");
 			}
 			finally {
 				timer?.Dispose();
@@ -146,6 +163,7 @@ namespace KsWare.PrivilegedExecutor {
 
 		}
 
+		
 	}
 
 }
