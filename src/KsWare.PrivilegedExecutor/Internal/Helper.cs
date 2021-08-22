@@ -7,11 +7,12 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace KsWare.PrivilegedExecutor.Internal {
 
-	public class Helper {
+	public static class Helper {
 
 		internal static bool IsElevated {
 			get {
@@ -53,7 +54,7 @@ namespace KsWare.PrivilegedExecutor.Internal {
 			catch (Exception ex) {
 				Console.WriteLine($"Exception: {ex}");
 				Console.WriteLine($"Exception.Message: {ex.Message}");
-				return (int) ExitCode.ExceptionOccured;
+				return (int) ExitCode.ExceptionOccurred;
 			}
 		}
 
@@ -90,5 +91,11 @@ namespace KsWare.PrivilegedExecutor.Internal {
 			return path0 + "\\" + fileName;
 		}
 
+		public static void RunMta(ThreadStart action) {
+			var t = new Thread(action);
+			t.SetApartmentState(ApartmentState.MTA);
+			t.Start();
+			t.Join();
+		}
 	}
 }

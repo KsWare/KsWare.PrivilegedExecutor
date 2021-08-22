@@ -16,6 +16,9 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Properties\KsWare.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject>KsWare.PrivilegedExecutor.Tests.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "KsWare.PrivilegedExecutor": {
+      "commandName": "Project",
+      "commandLineArgs": "--background --debug --singleinstance"
+    }
+  }
+}
