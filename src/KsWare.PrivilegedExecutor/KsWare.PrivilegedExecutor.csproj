@@ -30,6 +30,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="KsWare.Console" Version="0.2.0" />
+    <PackageReference Include="KsWare.IO.NamedPipes" Version="0.2.3" />
 </ItemGroup>
   <ItemGroup>
     <None Remove="KsWare.PrivilegedExecutor.csproj.DotSettings" />
@@ -47,9 +48,5 @@
     <PackageReference Include="System.Security.Principal.Windows">
       <Version>5.0.0</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\KsWare.IO.NamedPipes\src\KsWare.IO.NamedPipes\KsWare.IO.NamedPipes.csproj" Condition="$(Configuration) == 'LocalDebug'" />
-    <PackageReference Include="KsWare.IO.NamedPipes" Version="0.2.3" Condition="$(Configuration) != 'LocalDebug'" />
   </ItemGroup>
 </Project>

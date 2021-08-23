@@ -13,10 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KsWare.IO.NamedPipes", "..\..\KsWare.IO.NamedPipes\src\KsWare.IO.NamedPipes\KsWare.IO.NamedPipes.csproj", "{378CAC5B-1F20-4278-A129-9A9CE5243C7C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SubModules", "SubModules", "{306C07F0-7082-4E87-ACE3-F686921AAFA3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,18 +32,9 @@ Global
 		{A8F85D83-619A-4095-A1C1-C3085EB6C531}.LocalDebug|Any CPU.Build.0 = Debug|Any CPU
 		{A8F85D83-619A-4095-A1C1-C3085EB6C531}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8F85D83-619A-4095-A1C1-C3085EB6C531}.Release|Any CPU.Build.0 = Release|Any CPU
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C}.LocalDebug|Any CPU.ActiveCfg = Debug|Any CPU
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C}.LocalDebug|Any CPU.Build.0 = Debug|Any CPU
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{378CAC5B-1F20-4278-A129-9A9CE5243C7C} = {306C07F0-7082-4E87-ACE3-F686921AAFA3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {62700295-8ABD-47B0-82EE-A32BC416E246}
